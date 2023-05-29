@@ -1,0 +1,42 @@
+﻿version: "3.3"
+
+volumes:
+  db:
+    
+networks:
+    functions:
+      
+services:
+  functions:
+    build: ./Functions
+    environment:
+      ASPNETCORE_AppConfig__DB__Server: "db"
+      ASPNETCORE_AppConfig__DB__User: "root"
+      ASPNETCORE_AppConfig__DB__Password: "testPW"
+      ASPNETCORE_AppConfig__DB__Database: "Functions"
+      ASPNETCORE_ENVIRONMENT: "Production"
+    ports:
+      - "8080:80"
+      - "8081:443"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - db
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - functions
+  db:
+    image: mysql:8.0.31-debian
+    cap_add:
+      - SYS_NICE
+    environment:
+      MYSQL_DATABASE: 'db'
+      MYSQL_ROOT_PASSWORD: 'testPW'
+    volumes:
+      - db:/var/lib/mysql
+    restart: unless-stopped
+    networks:
+      - functions
+    ports:
+      - "8082:3306"  
