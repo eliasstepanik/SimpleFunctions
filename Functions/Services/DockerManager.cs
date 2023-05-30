@@ -13,18 +13,7 @@ public class DockerManager : IDockerManager
     public DockerManager(ILogger<DockerManager> logger)
     {
         _logger = logger;
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            _docker = new DockerClientConfiguration(new Uri("npipe://./pipe/docker_engine")).CreateClient();
-        }
-        else if(RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-        {
-            _docker = new DockerClientConfiguration(new Uri("unix:///var/run/dockerManager.sock")).CreateClient();
-        }
-        else
-        {
-            throw new Exception("This Platform is not Supported");
-        }
+        _docker = new DockerClientConfiguration().CreateClient();
     }
 
     public async Task<IList<ContainerListResponse>> GetContainers()
@@ -91,6 +80,8 @@ public class DockerManager : IDockerManager
         {
             Force = true
         };
+        
+        
         await _docker.Containers.RemoveContainerAsync(containerId, parameters);
     }
 

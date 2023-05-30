@@ -63,9 +63,16 @@ public class FunctionManager
             if (message.Equals("error"))
             {
                 _dockerManager.DeleteContainer(instance.InstanceId);
-                return "";
+                var i = db.Instances.First(s => s.InstanceId.Equals(instance.InstanceId));
+                db.Instances.Remove(i);
+                await db.SaveChangesAsync();
+                return "Failed to send Message to Container";
             }
 
+            _dockerManager.DeleteContainer(instance.InstanceId);
+            var temp_i = db.Instances.First(s => s.InstanceId.Equals(instance.InstanceId));
+            db.Instances.Remove(temp_i);
+            await db.SaveChangesAsync();
             return message;
         }
         if (method.Equals(HttpMethod.Get))
@@ -74,9 +81,16 @@ public class FunctionManager
             if (message.Equals("error"))
             {
                 _dockerManager.DeleteContainer(instance.InstanceId);
-                return "";
+                var i = db.Instances.First(s => s.InstanceId.Equals(instance.InstanceId));
+                db.Instances.Remove(i);
+                await db.SaveChangesAsync();
+                return "Failed to send Message to Container";
             }
 
+            _dockerManager.DeleteContainer(instance.InstanceId);
+            var temp_i = db.Instances.First(s => s.InstanceId.Equals(instance.InstanceId));
+            db.Instances.Remove(temp_i);
+            await db.SaveChangesAsync();
             return message;
         }
         if (method.Equals(HttpMethod.Patch))
@@ -85,14 +99,22 @@ public class FunctionManager
             if (message.Equals("error"))
             {
                 _dockerManager.DeleteContainer(instance.InstanceId);
-                return "";
+                var i = db.Instances.First(s => s.InstanceId.Equals(instance.InstanceId));
+                db.Instances.Remove(i);
+                await db.SaveChangesAsync();
+                return "Failed to send Message to Container";
             }
 
+            _dockerManager.DeleteContainer(instance.InstanceId);
+            var temp_i = db.Instances.First(s => s.InstanceId.Equals(instance.InstanceId));
+            db.Instances.Remove(temp_i);
+            await db.SaveChangesAsync();
             return message;
+            
 
         }
 
-        return "";
+        return "Failed to send Message to Container";
     }
     
     
