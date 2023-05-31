@@ -8,7 +8,9 @@ networks:
       
 services:
   functions: #Name can not be changed
-    build: ./Functions
+    build:
+      context: Functions
+      dockerfile: Dockerfile
     environment:
       DB_SERVER: "db"
       DB_USER: "root"
