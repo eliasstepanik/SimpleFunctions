@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Net;
+using System.Text;
 using Functions.Services.Interfaces;
 
 namespace Functions.Services;
@@ -14,7 +15,7 @@ public class ExternalEndpointManager : IExternalEndpointManager
         _httpClient = httpClient;
     }
 
-    public async Task<string> Get(string hostname)
+    public async Task<HttpResponseMessage> Get(string hostname)
     {
         try
         {
@@ -24,22 +25,17 @@ public class ExternalEndpointManager : IExternalEndpointManager
             // Ensure the response was successful
             response.EnsureSuccessStatusCode();
 
-            // Read the response content as a string
-            string responseBody = await response.Content.ReadAsStringAsync();
-
             // Display the response content
-            return responseBody;
+            return response;
         }
         catch (HttpRequestException ex)
         {
             // Handle any errors that occurred during the request
-            return "error";
+            return new HttpResponseMessage(HttpStatusCode.BadRequest);
         }
-
-        return "error";
     }
 
-    public async Task<string> Post(string hostname, string body)
+    public async Task<HttpResponseMessage> Post(string hostname, string body)
     {
         try
         {
@@ -50,22 +46,17 @@ public class ExternalEndpointManager : IExternalEndpointManager
             // Ensure the response was successful
             response.EnsureSuccessStatusCode();
 
-            // Read the response content as a string
-            string responseBody = await response.Content.ReadAsStringAsync();
-
             // Display the response content
-            return responseBody;
+            return response;
         }
         catch (HttpRequestException ex)
         {
             // Handle any errors that occurred during the request
-            return "error";
+            return new HttpResponseMessage(HttpStatusCode.BadRequest);
         }
-
-        return "error";
     }
 
-    public async Task<string> Delete(string hostname)
+    public async Task<HttpResponseMessage> Delete(string hostname)
     {
         try
         {
@@ -75,22 +66,17 @@ public class ExternalEndpointManager : IExternalEndpointManager
             // Ensure the response was successful
             response.EnsureSuccessStatusCode();
 
-            // Read the response content as a string
-            string responseBody = await response.Content.ReadAsStringAsync();
-
             // Display the response content
-            return responseBody;
+            return response;
         }
         catch (HttpRequestException ex)
         {
             // Handle any errors that occurred during the request
-            return "error";
+            return new HttpResponseMessage(HttpStatusCode.BadRequest);
         }
-
-        return "error";
     }
 
-    public async Task<string> Patch(string hostname, string body)
+    public async Task<HttpResponseMessage> Patch(string hostname, string body)
     {
         try
         {
@@ -101,18 +87,34 @@ public class ExternalEndpointManager : IExternalEndpointManager
             // Ensure the response was successful
             response.EnsureSuccessStatusCode();
 
-            // Read the response content as a string
-            string responseBody = await response.Content.ReadAsStringAsync();
-
             // Display the response content
-            return responseBody;
+            return response;
         }
         catch (HttpRequestException ex)
         {
             // Handle any errors that occurred during the request
-            return "error";
+            return new HttpResponseMessage(HttpStatusCode.BadRequest);
         }
+    }
 
-        return "error";
+    public async Task<HttpResponseMessage> Put(string hostname, string body)
+    {
+        try
+        {
+            var content = new StringContent(body, Encoding.UTF8, "application/json");
+            // Send GET request to the API
+            HttpResponseMessage response = await _httpClient.PutAsync($"http://{hostname}",content);
+
+            // Ensure the response was successful
+            response.EnsureSuccessStatusCode();
+
+            // Display the response content
+            return response;
+        }
+        catch (HttpRequestException ex)
+        {
+            // Handle any errors that occurred during the request
+            return new HttpResponseMessage(HttpStatusCode.BadRequest);
+        }
     }
 }

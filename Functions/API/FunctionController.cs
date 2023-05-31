@@ -1,4 +1,5 @@
-﻿using Docker.DotNet.Models;
+﻿using System.Net;
+using Docker.DotNet.Models;
 using Functions.Services;
 using Functions.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -18,7 +19,7 @@ public class FunctionController : ControllerBase
         _functionManager = functionManager;
     }
 
-    [HttpPost]
+    [HttpPost("{functionName}/edit")]
     public async Task<IActionResult> CreateFunction(string functionName, string imageTag)
     {
         await _functionManager.CreateFunction(functionName, imageTag);
@@ -27,30 +28,96 @@ public class FunctionController : ControllerBase
 
 
     [HttpPost("{functionName}")]
-    public async Task<string> RunFunctionPost(string functionName,[FromBody] string text)
+    public async Task<IActionResult> RunFunctionPost(string functionName,[FromBody] string text)
     {
-        var response = await _functionManager.RunInstance(functionName,HttpMethod.Post, text);
-        _logger.LogInformation(functionName);
-        return response;
+        var responseContext = await _functionManager.RunInstance(functionName,HttpMethod.Post, text);
+        
+        if (responseContext.IsSuccessStatusCode)
+        {
+            //_logger.LogInformation(""); TODO: Write Log Message
+            return Ok(await responseContext.Content.ReadAsStringAsync());
+        }
+        if(responseContext.StatusCode == HttpStatusCode.BadRequest)
+        {
+            return BadRequest(responseContext.ReasonPhrase);
+        }
+
+        return NoContent();
     }
     [HttpGet("{functionName}")]
-    public async Task<string> RunFunctionGet(string functionName)
+    public async Task<IActionResult> RunFunctionGet(string functionName)
     {
-        var response = await _functionManager.RunInstance(functionName,HttpMethod.Get);
-        _logger.LogInformation(functionName);
-        return response;
+        var responseContext = await _functionManager.RunInstance(functionName,HttpMethod.Get);
+        
+        if (responseContext.IsSuccessStatusCode)
+        {
+            //_logger.LogInformation(""); TODO: Write Log Message
+            return Ok(await responseContext.Content.ReadAsStringAsync());
+        }
+        if(responseContext.StatusCode == HttpStatusCode.BadRequest)
+        {
+            return BadRequest(responseContext.ReasonPhrase);
+        }
+
+        return NoContent();
     }
     
     [HttpPatch("{functionName}")]
-    public async Task<string> RunFunctionPatch(string functionName,[FromBody] string text)
+    public async Task<IActionResult> RunFunctionPatch(string functionName,[FromBody] string text)
     {
-        var response = await _functionManager.RunInstance(functionName,HttpMethod.Patch, text);
-        _logger.LogInformation(functionName);
-        return response;
+        var responseContext = await _functionManager.RunInstance(functionName,HttpMethod.Patch, text);
+        
+        if (responseContext.IsSuccessStatusCode)
+        {
+            //_logger.LogInformation(""); TODO: Write Log Message
+            return Ok(await responseContext.Content.ReadAsStringAsync());
+        }
+        if(responseContext.StatusCode == HttpStatusCode.BadRequest)
+        {
+            return BadRequest(responseContext.ReasonPhrase);
+        }
+
+        return NoContent();
+    }
+    
+    [HttpPut("{functionName}")]
+    public async Task<IActionResult> RunFunctionPut(string functionName,[FromBody] string text)
+    {
+        var responseContext = await _functionManager.RunInstance(functionName,HttpMethod.Put, text);
+
+        if (responseContext.IsSuccessStatusCode)
+        {
+            //_logger.LogInformation(""); TODO: Write Log Message
+            return Ok(await responseContext.Content.ReadAsStringAsync());
+        }
+        if(responseContext.StatusCode == HttpStatusCode.BadRequest)
+        {
+            return BadRequest(responseContext.ReasonPhrase);
+        }
+
+        return NoContent();
+    }
+    
+    [HttpDelete("{functionName}")]
+    public async Task<IActionResult> RunFunctionDelete(string functionName,[FromBody] string text)
+    {
+        var responseContext = await _functionManager.RunInstance(functionName,HttpMethod.Delete, text);
+
+        if (responseContext.IsSuccessStatusCode)
+        {
+            //_logger.LogInformation(""); TODO: Write Log Message
+            return Ok(await responseContext.Content.ReadAsStringAsync());
+        }
+        if(responseContext.StatusCode == HttpStatusCode.BadRequest)
+        {
+            return BadRequest(responseContext.ReasonPhrase);
+        }
+
+        return NoContent();
     }
 
     
-    [HttpDelete("{functionName}/delete")]
+    [HttpDelete("{functionName}/edit")]
     public async Task<IActionResult> DeleteFunction(string functionName)
     {
         await _functionManager.DeleteFunction(functionName);

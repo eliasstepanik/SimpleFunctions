@@ -1,4 +1,5 @@
-﻿using Functions.Data;
+﻿using System.Net;
+using Functions.Data;
 using Functions.Data.DB;
 using Functions.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -40,7 +41,7 @@ public class FunctionManager
         await db.SaveChangesAsync();
     }
 
-    public async Task<string> RunInstance(string functionName, HttpMethod method, string body = "")
+    public async Task<HttpResponseMessage> RunInstance(string functionName, HttpMethod method, string body = "")
     {
         var db = await _dbContextFactory.CreateDbContextAsync();
         var function = db.Functions.Include(s => s.Instances).Include(s => s.EnvironmentVariables).First(s => s.Name.Equals(functionName));
@@ -60,62 +61,58 @@ public class FunctionManager
         if (method.Equals(HttpMethod.Post))
         {
             var message = await _externalEndpointManager.Post(instance.Name, body);
-            if (message.Equals("error"))
-            {
-                _dockerManager.DeleteContainer(instance.InstanceId);
-                var i = db.Instances.First(s => s.InstanceId.Equals(instance.InstanceId));
-                db.Instances.Remove(i);
-                await db.SaveChangesAsync();
-                return "Failed to send Message to Container";
-            }
-
-            _dockerManager.DeleteContainer(instance.InstanceId);
-            var temp_i = db.Instances.First(s => s.InstanceId.Equals(instance.InstanceId));
-            db.Instances.Remove(temp_i);
-            await db.SaveChangesAsync();
-            return message;
+            return await HandleError(message, instance);
         }
         if (method.Equals(HttpMethod.Get))
         {
             var message = await _externalEndpointManager.Get(instance.Name);
-            if (message.Equals("error"))
-            {
-                _dockerManager.DeleteContainer(instance.InstanceId);
-                var i = db.Instances.First(s => s.InstanceId.Equals(instance.InstanceId));
-                db.Instances.Remove(i);
-                await db.SaveChangesAsync();
-                return "Failed to send Message to Container";
-            }
-
-            _dockerManager.DeleteContainer(instance.InstanceId);
-            var temp_i = db.Instances.First(s => s.InstanceId.Equals(instance.InstanceId));
-            db.Instances.Remove(temp_i);
-            await db.SaveChangesAsync();
-            return message;
+            return await HandleError(message, instance);
         }
         if (method.Equals(HttpMethod.Patch))
         {
             var message = await _externalEndpointManager.Patch(instance.Name, body);
-            if (message.Equals("error"))
-            {
-                _dockerManager.DeleteContainer(instance.InstanceId);
-                var i = db.Instances.First(s => s.InstanceId.Equals(instance.InstanceId));
-                db.Instances.Remove(i);
-                await db.SaveChangesAsync();
-                return "Failed to send Message to Container";
-            }
+            return await HandleError(message, instance);
 
-            _dockerManager.DeleteContainer(instance.InstanceId);
-            var temp_i = db.Instances.First(s => s.InstanceId.Equals(instance.InstanceId));
-            db.Instances.Remove(temp_i);
-            await db.SaveChangesAsync();
-            return message;
-            
+
+        }
+        if (method.Equals(HttpMethod.Put))
+        {
+            var message = await _externalEndpointManager.Put(instance.Name, body);
+            return await HandleError(message, instance);
+
+
+        }
+        if (method.Equals(HttpMethod.Delete))
+        {
+            var message = await _externalEndpointManager.Delete(instance.Name);
+            return await HandleError(message, instance);
+
 
         }
 
-        return "Failed to send Message to Container";
+        return new HttpResponseMessage(HttpStatusCode.BadRequest);
     }
-    
-    
+
+
+    private async Task<HttpResponseMessage> HandleError(HttpResponseMessage message, Instance instance)
+    {
+        var db = await _dbContextFactory.CreateDbContextAsync();
+        if (!message.IsSuccessStatusCode)
+        {
+            _dockerManager.DeleteContainer(instance.InstanceId);
+            var i = db.Instances.First(s => s.InstanceId.Equals(instance.InstanceId));
+            db.Instances.Remove(i);
+            await db.SaveChangesAsync();
+            return new HttpResponseMessage(HttpStatusCode.BadRequest);
+        }
+
+        _dockerManager.DeleteContainer(instance.InstanceId);
+        var temp_i = db.Instances.First(s => s.InstanceId.Equals(instance.InstanceId));
+        db.Instances.Remove(temp_i);
+        await db.SaveChangesAsync();
+        await db.DisposeAsync();
+        return message;
+    }
+
+
 }
