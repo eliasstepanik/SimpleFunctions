@@ -13,13 +13,17 @@ public class FunctionManager
     private readonly IDockerManager _dockerManager;
     private readonly IDbContextFactory<FunctionsContext> _dbContextFactory;
     private readonly IExternalEndpointManager _externalEndpointManager;
+    private readonly IConfiguration _configuration;
+    private readonly INativeCommandWrapper _nativeCommandWrapper;
     
-    public FunctionManager(ILogger<FunctionManager> logger, IDockerManager dockerManager, IDbContextFactory<FunctionsContext> dbContextFactory, IExternalEndpointManager externalEndpointManager)
+    public FunctionManager(ILogger<FunctionManager> logger, IDockerManager dockerManager, IDbContextFactory<FunctionsContext> dbContextFactory, IExternalEndpointManager externalEndpointManager, IConfiguration configuration, INativeCommandWrapper nativeCommandWrapper)
     {
         _logger = logger;
         _dockerManager = dockerManager;
         _dbContextFactory = dbContextFactory;
         _externalEndpointManager = externalEndpointManager;
+        _configuration = configuration;
+        _nativeCommandWrapper = nativeCommandWrapper;
     }
 
 
@@ -28,6 +32,7 @@ public class FunctionManager
         var db = await _dbContextFactory.CreateDbContextAsync();
         await db.Functions.AddAsync(new Function(functionName, imageTag));
         await db.SaveChangesAsync();
+        await db.DisposeAsync();
     }
     public async Task DeleteFunction(string functionName)
     {
@@ -39,6 +44,7 @@ public class FunctionManager
         }
         db.Functions.Remove(function);
         await db.SaveChangesAsync();
+        await db.DisposeAsync();
     }
 
     public async Task<HttpResponseMessage> RunInstance(string functionName, HttpMethod method, string body = "")
@@ -51,8 +57,9 @@ public class FunctionManager
         function.Instances.Add(instance);
         db.Functions.Update(function);
         await db.SaveChangesAsync();
+        await db.DisposeAsync();
         
-        _dockerManager.ConnectNetwork("simplefunctions_functions", instance.InstanceId);
+        _dockerManager.ConnectNetwork(_configuration["AppConfig:FuctionNetworkName"] ?? throw new InvalidOperationException(), instance.InstanceId);
         _dockerManager.StartContainer(instance.InstanceId);
         
         //TODO: If not started delete instance

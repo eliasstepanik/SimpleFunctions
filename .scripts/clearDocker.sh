@@ -15,7 +15,13 @@ docker rm $(docker ps -aq --filter "name=functions") || true
 echo '####################################################'
 echo 'Removing images ...'
 echo '####################################################'
-docker rmi $(docker images -q --filter "reference=*functions*") || true
+docker rmi -f $(docker images -q --filter "reference=*functions*") || true
+
+# remove all networks
+echo '####################################################'
+echo 'Removing networks ...'
+echo '####################################################'
+docker network rm $(docker network ls -q --filter "name=FunctionsProxy") || true
 
 # remove all stray volumes if any
 #echo '####################################################'

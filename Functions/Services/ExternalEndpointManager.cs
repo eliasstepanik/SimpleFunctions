@@ -30,6 +30,7 @@ public class ExternalEndpointManager : IExternalEndpointManager
         }
         catch (HttpRequestException ex)
         {
+            _logger.LogError(ex.Message);
             // Handle any errors that occurred during the request
             return new HttpResponseMessage(HttpStatusCode.BadRequest);
         }
@@ -51,6 +52,7 @@ public class ExternalEndpointManager : IExternalEndpointManager
         }
         catch (HttpRequestException ex)
         {
+            _logger.LogError(ex.Message);
             // Handle any errors that occurred during the request
             return new HttpResponseMessage(HttpStatusCode.BadRequest);
         }
@@ -71,6 +73,7 @@ public class ExternalEndpointManager : IExternalEndpointManager
         }
         catch (HttpRequestException ex)
         {
+            _logger.LogError(ex.Message);
             // Handle any errors that occurred during the request
             return new HttpResponseMessage(HttpStatusCode.BadRequest);
         }
@@ -92,6 +95,7 @@ public class ExternalEndpointManager : IExternalEndpointManager
         }
         catch (HttpRequestException ex)
         {
+            _logger.LogError(ex.Message);
             // Handle any errors that occurred during the request
             return new HttpResponseMessage(HttpStatusCode.BadRequest);
         }
@@ -113,6 +117,7 @@ public class ExternalEndpointManager : IExternalEndpointManager
         }
         catch (HttpRequestException ex)
         {
+            _logger.LogError(ex.Message);
             // Handle any errors that occurred during the request
             return new HttpResponseMessage(HttpStatusCode.BadRequest);
         }

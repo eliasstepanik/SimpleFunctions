@@ -43,6 +43,25 @@ public class DockerManager : IDockerManager
         return new ContainerResponse(createContainerParameters.Name, container.ID);
     }
 
+    public async void CreateNetwork(string name)
+    {
+        var networks = await _docker.Networks.ListNetworksAsync();
+        foreach (var networkResponse in networks)
+        {
+            if (networkResponse.Name.Equals(name))
+            {
+                return;
+            }
+        }
+        
+        var networkCreateParameters = new NetworksCreateParameters()
+        {
+            Name = name,
+            Attachable = true
+        };
+        await _docker.Networks.CreateNetworkAsync(networkCreateParameters);
+    }
+
     public async void ConnectNetwork(string name, string containerId)
     {
         var networkConnectParameters = new NetworkConnectParameters()

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text;
 using Functions.Data.DB;
 using Functions.Services;
@@ -8,6 +9,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 //ASPNETCORE_AppConfig__TwilioSecret=my-secret
 builder.Configuration.AddEnvironmentVariables();
+builder.Configuration["AppConfig:FuctionNetworkName"] = Environment.GetEnvironmentVariable("FUNCTION_NETWORK") ?? "simplefunctions_functions";
+builder.Configuration["AppConfig:DB:Server"] = Environment.GetEnvironmentVariable("DB_SERVER") ?? "localhost";
+builder.Configuration["AppConfig:DB:Port"] = Environment.GetEnvironmentVariable("DB_PORT") ?? "3306";
+builder.Configuration["AppConfig:DB:User"] = Environment.GetEnvironmentVariable("DB_USER") ?? "root";
+builder.Configuration["AppConfig:DB:Password"] = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "password";
+builder.Configuration["AppConfig:DB:Database"] = Environment.GetEnvironmentVariable("DB_DATABASE") ?? "db";
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -31,6 +38,7 @@ builder.Services.AddDbContextFactory<FunctionsContext>(
 
 
 builder.Services.AddTransient<IDockerManager,DockerManager>();
+builder.Services.AddSingleton<INativeCommandWrapper,NativeCommandWrapper>();
 builder.Services.AddSingleton<FunctionManager>();
 builder.Services.AddHttpClient<IExternalEndpointManager, ExternalEndpointManager>()
     .SetHandlerLifetime(TimeSpan.FromMinutes(5));
@@ -54,6 +62,5 @@ app.MapControllers();
 var dbFactory = app.Services.GetRequiredService<IDbContextFactory<FunctionsContext>>();
 var db = await dbFactory.CreateDbContextAsync();
 await db.Database.MigrateAsync();
-
 
 app.Run();

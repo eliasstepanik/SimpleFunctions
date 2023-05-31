@@ -7,14 +7,15 @@ networks:
     functions:
       
 services:
-  functions:
+  functions: #Name can not be changed
     build: ./Functions
     environment:
-      ASPNETCORE_AppConfig__DB__Server: "db"
-      ASPNETCORE_AppConfig__DB__User: "root"
-      ASPNETCORE_AppConfig__DB__Password: "testPW"
-      ASPNETCORE_AppConfig__DB__Database: "Functions"
+      DB_SERVER: "db"
+      DB_USER: "root"
+      DB_PASSWORD: "testPW"
+      DB_DATABASE: "Functions"
       ASPNETCORE_ENVIRONMENT: "Production"
+      FUNCTION_NETWORK: "simplefunctions_functions"
     ports:
       - "8080:80"
       - "8081:443"
