@@ -9,7 +9,7 @@ COPY ["Functions/Functions.csproj", "Functions/"]
 RUN dotnet restore "Functions/Functions.csproj"
 COPY . .
 WORKDIR "/src/Functions"
-RUN dotnet build "Functions.csproj" -c Release -o /app/build
+RUN dotnet build "Functions.csproj" -c Release -o /app/build --build-arg source=src
 
 FROM build AS publish
 RUN dotnet publish "Functions.csproj" -c Release -o /app/publish /p:UseAppHost=false
