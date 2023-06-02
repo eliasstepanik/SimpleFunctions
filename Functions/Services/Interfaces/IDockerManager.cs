@@ -13,4 +13,5 @@ public interface IDockerManager
     public void DeleteContainer(string containerId);
     public void CreateNetwork(string name);
     public Task<bool> IsRunning(string containerId);
+    public Task<ContainerStatsResponse> GetLoad(string containerId);
 }

@@ -23,5 +23,5 @@ public class Function
     
     public List<Environment> EnvironmentVariables { get; set; } = null!;
 
-    public List<Instance> Instances { get; set; } = null!;
+    public List<Instance?> Instances { get; set; } = null!;
 }
