@@ -1,3 +1,5 @@
+using Docker.DotNet;
+using Docker.DotNet.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace TestFunction.Controllers;
@@ -31,15 +33,9 @@ public class TestController : ControllerBase
     }
     
     [HttpPost]
-    public IEnumerable<WeatherForecast> Post()
+    public async Task<ContainerStatsResponse> Post(string id)
     {
-        return Enumerable.Range(1, 5).Select(index => new WeatherForecast
-            {
-                Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                TemperatureC = Random.Shared.Next(-20, 55),
-                Summary = Summaries[Random.Shared.Next(Summaries.Length)]
-            })
-            .ToArray();
+        return await Test.GetLoad(id);
     }
     
     [HttpPatch]

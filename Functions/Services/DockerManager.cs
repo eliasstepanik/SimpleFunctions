@@ -117,6 +117,20 @@ public class DockerManager : IDockerManager
 
         return false;
     }
+
+    public async Task<ContainerStatsResponse> GetLoad(string containerId)
+    {
+        ContainerStatsParameters parameters = new ContainerStatsParameters()
+        {
+            Stream = false,
+        };
+        var response = new ContainerStatsResponse();
+
+        IProgress<ContainerStatsResponse> progress = new Progress<ContainerStatsResponse>(stats => { response = stats; });
+
+        await _docker.Containers.GetContainerStatsAsync(containerId,parameters, progress);
+        return response;
+    }
 }
 
 public class ContainerResponse

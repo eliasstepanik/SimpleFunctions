@@ -40,14 +40,14 @@ public class FunctionManager
         var function = db.Functions.Include(s => s.Instances).Include(s => s.EnvironmentVariables).First(s => s.Name.Equals(functionName));
         foreach (var functionInstance in function.Instances)
         {
-            _dockerManager.DeleteContainer(functionInstance.InstanceId);
+            DeleteInstance(functionInstance);
         }
         db.Functions.Remove(function);
         await db.SaveChangesAsync();
         await db.DisposeAsync();
     }
 
-    public async Task<HttpResponseMessage> RunInstance(string functionName, HttpMethod method, string body = "")
+    public async Task<InstanceRuntimeInfo> RunInstance(string functionName)
     {
         var db = await _dbContextFactory.CreateDbContextAsync();
         var function = db.Functions.Include(s => s.Instances).Include(s => s.EnvironmentVariables).First(s => s.Name.Equals(functionName));
@@ -61,10 +61,16 @@ public class FunctionManager
         
         _dockerManager.ConnectNetwork(_configuration["AppConfig:FuctionNetworkName"] ?? throw new InvalidOperationException(), instance.InstanceId);
         _dockerManager.StartContainer(instance.InstanceId);
-        
-        //TODO: If not started delete instance
-        //Send Request to Container
 
+
+        return new InstanceRuntimeInfo()
+        {
+            Instance = instance
+        };
+    }
+
+    public async Task<HttpResponseMessage> SendRequest(Instance? instance,string function, HttpMethod method, string body = "")
+    {
         if (method.Equals(HttpMethod.Post))
         {
             var message = await _externalEndpointManager.Post(instance.Name, body);
@@ -86,39 +92,35 @@ public class FunctionManager
         {
             var message = await _externalEndpointManager.Put(instance.Name, body);
             return await HandleError(message, instance);
-
-
         }
         if (method.Equals(HttpMethod.Delete))
         {
             var message = await _externalEndpointManager.Delete(instance.Name);
             return await HandleError(message, instance);
-
-
         }
-
         return new HttpResponseMessage(HttpStatusCode.BadRequest);
     }
 
 
-    private async Task<HttpResponseMessage> HandleError(HttpResponseMessage message, Instance instance)
+    private async Task<HttpResponseMessage> HandleError(HttpResponseMessage message, Instance? instance)
     {
         var db = await _dbContextFactory.CreateDbContextAsync();
         if (!message.IsSuccessStatusCode)
         {
-            _dockerManager.DeleteContainer(instance.InstanceId);
-            var i = db.Instances.First(s => s.InstanceId.Equals(instance.InstanceId));
-            db.Instances.Remove(i);
-            await db.SaveChangesAsync();
+            DeleteInstance(instance);
             return new HttpResponseMessage(HttpStatusCode.BadRequest);
         }
+        return message;
+    }
 
+    public async void DeleteInstance(Instance? instance)
+    {
+        var db = await _dbContextFactory.CreateDbContextAsync();
         _dockerManager.DeleteContainer(instance.InstanceId);
         var temp_i = db.Instances.First(s => s.InstanceId.Equals(instance.InstanceId));
         db.Instances.Remove(temp_i);
         await db.SaveChangesAsync();
         await db.DisposeAsync();
-        return message;
     }
 
 

@@ -32,11 +32,12 @@ var serverVersion = new MySqlServerVersion(new Version(8, 0, 31));
 builder.Services.AddDbContextFactory<FunctionsContext>(
     dbContextOptions => dbContextOptions
         .UseMySql(connectionString.ToString(), serverVersion)
-        .LogTo(Console.WriteLine, LogLevel.Debug)
+        .LogTo(Console.WriteLine, LogLevel.Error)
         .EnableSensitiveDataLogging()
         .EnableDetailedErrors());
 
-
+builder.Services.AddTransient<ILoadManager,LoadManager>();
+builder.Services.AddSingleton<TimerManager>();
 builder.Services.AddTransient<IDockerManager,DockerManager>();
 builder.Services.AddSingleton<INativeCommandWrapper,NativeCommandWrapper>();
 builder.Services.AddSingleton<FunctionManager>();
@@ -62,5 +63,8 @@ app.MapControllers();
 var dbFactory = app.Services.GetRequiredService<IDbContextFactory<FunctionsContext>>();
 var db = await dbFactory.CreateDbContextAsync();
 await db.Database.MigrateAsync();
+
+var loadManager = app.Services.GetRequiredService<ILoadManager>();
+loadManager.Start();
 
 app.Run();

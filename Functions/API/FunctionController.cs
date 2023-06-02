@@ -12,11 +12,14 @@ public class FunctionController : ControllerBase
 {
     private readonly ILogger<TestController> _logger;
     private readonly FunctionManager _functionManager;
+    private readonly ILoadManager _loadManager;
 
-    public FunctionController(ILogger<TestController> logger, FunctionManager functionManager)
+
+    public FunctionController(ILogger<TestController> logger, FunctionManager functionManager, ILoadManager loadManager)
     {
         _logger = logger;
         _functionManager = functionManager;
+        _loadManager = loadManager;
     }
 
     [HttpPost("{functionName}/edit")]
@@ -30,7 +33,7 @@ public class FunctionController : ControllerBase
     [HttpPost("{functionName}")]
     public async Task<IActionResult> RunFunctionPost(string functionName,[FromBody] string text)
     {
-        var responseContext = await _functionManager.RunInstance(functionName,HttpMethod.Post, text);
+        var responseContext = await _loadManager.HandleRequest(functionName,HttpMethod.Post, text);
         
         if (responseContext.IsSuccessStatusCode)
         {
@@ -47,7 +50,7 @@ public class FunctionController : ControllerBase
     [HttpGet("{functionName}")]
     public async Task<IActionResult> RunFunctionGet(string functionName)
     {
-        var responseContext = await _functionManager.RunInstance(functionName,HttpMethod.Get);
+        var responseContext = await _loadManager.HandleRequest(functionName,HttpMethod.Get);
         
         if (responseContext.IsSuccessStatusCode)
         {
@@ -65,7 +68,7 @@ public class FunctionController : ControllerBase
     [HttpPatch("{functionName}")]
     public async Task<IActionResult> RunFunctionPatch(string functionName,[FromBody] string text)
     {
-        var responseContext = await _functionManager.RunInstance(functionName,HttpMethod.Patch, text);
+        var responseContext = await _loadManager.HandleRequest(functionName,HttpMethod.Patch, text);
         
         if (responseContext.IsSuccessStatusCode)
         {
@@ -83,7 +86,7 @@ public class FunctionController : ControllerBase
     [HttpPut("{functionName}")]
     public async Task<IActionResult> RunFunctionPut(string functionName,[FromBody] string text)
     {
-        var responseContext = await _functionManager.RunInstance(functionName,HttpMethod.Put, text);
+        var responseContext = await _loadManager.HandleRequest(functionName,HttpMethod.Put, text);
 
         if (responseContext.IsSuccessStatusCode)
         {
@@ -101,7 +104,7 @@ public class FunctionController : ControllerBase
     [HttpDelete("{functionName}")]
     public async Task<IActionResult> RunFunctionDelete(string functionName,[FromBody] string text)
     {
-        var responseContext = await _functionManager.RunInstance(functionName,HttpMethod.Delete, text);
+        var responseContext = await _loadManager.HandleRequest(functionName,HttpMethod.Delete, text);
 
         if (responseContext.IsSuccessStatusCode)
         {
